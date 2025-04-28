@@ -2,7 +2,7 @@
     $title = 'Home';
     $css = 'index';
 @endphp
-
+@vite(['resources/js/app.js'])
 @extends('header')
 
 @section('content')
@@ -21,6 +21,7 @@
                         <th>Status</th>
                         <th>Progress</th>
                         <th>Due Date</th>
+                        <th>File</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -40,7 +41,7 @@
                             </td>
                             <td>
                                 <span class="status status-{{ strtolower($task->status) }}">
-                                    {{ ucfirst($task->status) }}
+                                    {{ ucwords(str_replace('_', ' ', $task->status)) }}
                                 </span>
                             </td>
                             <td>
@@ -49,15 +50,19 @@
                                 </div>
                             </td>
                             <td>{{ $task->due_date }}</td>
+                            <td> <a href="{{ route('download', $task->id) }}" class="show-more-btn"
+                                    style="text-decoration: none;">Download</a></td>
                             <td>
                                 <a href="{{ route('updateTaskPage', $task->id) }}">
                                     <button type="button">Edit</button>
                                 </a>
 
-                                <form action="{{ route('delete', $task->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit">Delete</button>
+                                @if ($id == $task->user_id)
+                                    <form action="{{ route('delete', $task->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit">Delete</button>
+                                @endif
                                 </form>
                             </td>
                         </tr>
@@ -73,6 +78,14 @@
         </div>
 
         <script>
+            setTimeout(() =>  {
+                window.Echo.channel('tasks')
+                .listen('TaskUpdated', (e) => {
+                    console.log('Task updated:', e);
+                    alert('A task was updated!');
+                });
+            },1000)
+
             function showDescription(text) {
                 document.getElementById('modal-description').textContent = text;
                 document.getElementById('description-modal').style.display = 'flex';

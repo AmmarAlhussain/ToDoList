@@ -14,7 +14,7 @@ class LoginController extends Controller
 
     public function handleLogin(Request $request)
     {
-        $validated = $request->validate(["email" => "required|email", "password" => "required|min:8"]);
+        $validated = $request->validate(["email" => "required|email", "password" => "required|min:6"]);
 
         if (Auth::attempt(["email" => $validated["email"], "password" => $validated["password"]])) {
             return redirect()->route("home");

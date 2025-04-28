@@ -30,6 +30,8 @@
         <div class="form-footer">
             <button type="submit">Login</button>
             <p>Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
-        </div>
+        </div>    
+        <hr style="margin-bottom: 10px; margin-top: 10px;">
+        <a href="{{route('google-auth')}}" style="text-decoration: none;">Use Google to Login</a>
     </form>
 @endsection

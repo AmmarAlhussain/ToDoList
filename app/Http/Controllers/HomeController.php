@@ -4,17 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
+use App\Models\User;
 use Carbon\Carbon;
 
 class HomeController extends Controller
 {
     public function indexPage() {
         $tasks = collect();
-
+        $id = "null";
         if (Auth::check()) {
-            $tasks = Task::where('user_id', Auth::id())
-                ->orderBy('due_date', 'asc')
-                ->get();
+            $owner = Task::where('user_id', Auth::id())->get();
+
+
+            $member = Task::whereHas('users', function ($query) {
+                    $query->where('users.id', Auth::id());
+                })->get();
+                
+            $tasks =  $owner->merge($member)->sortBy('due_date');
+
 
             foreach ($tasks as $task) {
                 $dueDate = Carbon::parse($task->due_date);
@@ -29,8 +36,9 @@ class HomeController extends Controller
 
                 $task->save();
             }
+            $id = Auth::id();
         }
 
-        return view("index", compact('tasks'));
+        return view("index", compact('tasks',"id"));
     }
 }

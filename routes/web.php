@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +26,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/registration', [RegisterController::class, 'handleRegister'])->name('handleRegister');
 
+    Route::get("auth/google",[GoogleAuthController::class,"redirect"])->name("google-auth");
+
+    Route::get("auth/google/callback",[GoogleAuthController::class,"callbackGoogle"])->name("");
+
 });
 
 Route::middleware('auth')->group(function () {
@@ -41,4 +47,6 @@ Route::middleware('auth')->group(function () {
 
 
     Route::delete('/task/{task}', [TaskController::class, 'destroy'])->name('delete');
+
+    Route::get('/tasks/download/{task}',[TaskController::class, 'download'])->name('download');
 });

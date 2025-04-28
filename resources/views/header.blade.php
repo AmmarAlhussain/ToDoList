@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/master.css">
     <link rel="stylesheet" href="/css/{{ $css }}.css">
     <title>{{ $title ?? '' }}</title>
+
 </head>
 
 <body>

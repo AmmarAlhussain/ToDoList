@@ -6,23 +6,27 @@
 @extends('header')
 
 @section('content')
+@if ($errors->any())
+    <div style="color: red;">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <h1>Create New Task</h1>
-    <form action="{{ route('addTask') }}" method="POST">
+
+    <form action="{{ route('addTask') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="input-group">
             <label for="title">Title</label>
             <input type="text" id="title" name="title" required placeholder="Enter task title">
-            @error('title')
-                <div class="error-message">{{ $message }}</div>
-            @enderror
         </div>
 
         <div class="input-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="4" placeholder="Enter task description"></textarea>
-            @error('description')
-                <div class="error-message">{{ $message }}</div>
-            @enderror
         </div>
 
         <div class="input-group">
@@ -32,33 +36,36 @@
                 <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
-                <option value="overdue">Overdue</option> 
+                <option value="overdue">Overdue</option>
             </select>
-            @error('status')
-                <div class="error-message">{{ $message }}</div>
-            @enderror
         </div>
 
         <div class="input-group">
             <label for="due_date">Due Date</label>
             <input type="date" id="due_date" name="due_date" required min="{{ date('Y-m-d') }}">
-            @error('due_date')
-                <div class="error-message">{{ $message }}</div>
-            @enderror
         </div>
-
+        @if ($users != collect())
+        <div class="input-group">
+            <select name="names[]" multiple style="height: 100px;">
+                @foreach ( $users as $key => $value )
+                <option value="{{$key}}">{{$value}}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
+        <div class="input-group">
+            <input type="file" name="file">
+        </div>
         <div class="input-group">
             <label for="progress">Progress</label>
             <input type="range" id="progress" name="progress" min="0" max="100" value="0" required>
             <span id="progressValue">0%</span>
-            @error('progress')
-                <div class="error-message">{{ $message }}</div>
-            @enderror
         </div>
 
         <div class="form-footer">
             <button type="submit">Create Task</button>
         </div>
+
     </form>
 
     <script>
@@ -68,7 +75,7 @@
         progress.addEventListener('input', function (e) {
             progressValue.textContent = e.target.value + "%";
         });
-        
+
         progressValue.textContent = progress.value + "%";
     </script>
 @endsection

@@ -14,8 +14,9 @@ class Task extends Model
         'due_date',
         'progress',
         'user_id',
+        'file',
     ];
     public function users() {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class);
     }
 }

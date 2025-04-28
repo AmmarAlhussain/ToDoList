@@ -12,7 +12,7 @@ class RegisterController extends Controller
     }
 
     public function handleRegister(Request $request) {
-        $request->validate(["name"=> "String|required|max:255|unique:users,name","email"=>"email|required|unique:users,email","password"=> "required|min:8|confirmed"]
+        $request->validate(["name"=> "String|required|max:255|unique:users,name","email"=>"email|required|unique:users,email","password"=> "required|min:6|confirmed"]
         ,['email.unique' => 'This email is already in use, please choose another.','name.unique'=> 'This username is already in use, please choose another.']);
         $user = User::create(['name'=>$request->name,'email'=>$request->email,'password'=>Hash::make($request->password)]);
         Auth::login($user);

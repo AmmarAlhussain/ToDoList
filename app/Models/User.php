@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\belongsToMany;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
     ];
 
     /**
@@ -47,7 +48,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function tasks(): HasMany{
-        return $this->hasMany(Task::class);
+    public function tasks(): belongsToMany{
+        return $this->belongsToMany(Task::class);
     }
 }
