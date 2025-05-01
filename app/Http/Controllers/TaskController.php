@@ -37,17 +37,27 @@ class TaskController extends Controller
         $file = null;
 
 
-        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+        if ($request->hasFile('file')) {
             $file = $request->file('file')->store('tasks', 's3');
             Storage::disk('s3')->setVisibility($file, 'public');
         }
 
         $dueDate = Carbon::parse($validated['due_date']);
         $status = $validated['status'];
-        
+        $progress = $validated['progress'];
         
         if ($dueDate->isPast() && $status !== 'completed') {
             $status = 'overdue';
+        }
+
+    
+        if ($progress == 100 && $status !== 'completed') {
+            $status = 'completed';
+        }
+
+
+        if ($status === 'completed' && $progress !== 100) {
+            $progress = 100;
         }
         
         $task = Task::create([
@@ -56,7 +66,7 @@ class TaskController extends Controller
             'status' => $status,
             'due_date' => $validated['due_date'],
             'user_id' => Auth::id(),
-            'progress' => $validated['progress'],
+            'progress' => $progress,
             'file' => $file
         ]);
         
@@ -110,16 +120,27 @@ class TaskController extends Controller
         ]);
 
     $file = null;
-    if ($request->hasFile('file') && $request->file('file')->isValid()) {
+    if ($request->hasFile('file')) {
         $file = $request->file('file')->store('tasks', 's3');
         Storage::disk('s3')->setVisibility($file, 'public');
     }
 
     $dueDate = Carbon::parse($validated['due_date']);
     $status = $validated['status'];
-
+    $progress = $validated['progress'];
+    
     if ($dueDate->isPast() && $status !== 'completed') {
         $status = 'overdue';
+    }
+
+
+    if ($progress == 100 && $status !== 'completed') {
+        $status = 'completed';
+    }
+
+
+    if ($status === 'completed' && $progress !== 100) {
+        $progress = 100;
     }
         
     $previousUserIds = $task->users()->pluck('user_id')->toArray();
@@ -128,7 +149,7 @@ class TaskController extends Controller
         'description' => $validated['description'] ?? '',
         'status' => $status,
         'due_date' => $validated['due_date'],
-        'progress' => $validated['progress'],
+        'progress' => $progress,
         'file' => $file
     ]);
     

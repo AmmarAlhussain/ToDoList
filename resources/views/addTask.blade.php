@@ -36,7 +36,6 @@
                 <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
-                <option value="overdue">Overdue</option>
             </select>
         </div>
 
@@ -58,7 +57,7 @@
         </div>
         <div class="input-group">
             <label for="progress">Progress</label>
-            <input type="range" id="progress" name="progress" min="0" max="100" value="0" required>
+            <input type="range" id="progress" name="progress" min="0" max="100" value="0" required style="padding: 3px 0">
             <span id="progressValue">0%</span>
         </div>
 
@@ -69,13 +68,27 @@
     </form>
 
     <script>
-        const progress = document.getElementById('progress');
-        const progressValue = document.getElementById('progressValue');
+    const progress = document.getElementById('progress');
+    const progressValue = document.getElementById('progressValue');
+    const statusSelect = document.getElementById('status');
 
-        progress.addEventListener('input', function (e) {
-            progressValue.textContent = e.target.value + "%";
-        });
+    function updateProgressDisplay(value) {
+        progress.value = value;
+        progressValue.textContent = value + "%";
+    }
 
-        progressValue.textContent = progress.value + "%";
+    progress.addEventListener('input', function (e) {
+        progressValue.textContent = e.target.value + "%";
+    });
+
+    statusSelect.addEventListener('change', function () {
+        if (this.value === 'completed') {
+            updateProgressDisplay(100);
+        } else {
+            updateProgressDisplay(0);
+        }
+    });
+
+    updateProgressDisplay(progress.value);
     </script>
 @endsection

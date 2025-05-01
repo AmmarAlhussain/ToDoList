@@ -65,10 +65,27 @@
     </form>
 
     <script>
-        function updateProgressBar() {
-            const progressValue = document.getElementById('progress').value;
-            const progressBarFill = document.getElementById('progressBarFill');
-            progressBarFill.style.width = progressValue + '%';
+    const progress = document.getElementById('progress');
+    const progressValue = document.getElementById('progressValue');
+    const statusSelect = document.getElementById('status');
+
+    function updateProgressDisplay(value) {
+        progress.value = value;
+        progressValue.textContent = value + "%";
+    }
+
+    progress.addEventListener('input', function (e) {
+        progressValue.textContent = e.target.value + "%";
+    });
+
+    statusSelect.addEventListener('change', function () {
+        if (this.value === 'completed') {
+            updateProgressDisplay(100);
+        } else {
+            updateProgressDisplay(0);
         }
+    });
+
+    updateProgressDisplay(progress.value);
     </script>
 @endsection

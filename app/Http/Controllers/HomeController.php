@@ -15,7 +15,6 @@ class HomeController extends Controller
         if (Auth::check()) {
             $owner = Task::where('user_id', Auth::id())->get();
 
-
             $member = Task::whereHas('users', function ($query) {
                     $query->where('users.id', Auth::id());
                 })->get();
@@ -28,10 +27,6 @@ class HomeController extends Controller
 
                 if ($task->status !== 'completed' && $dueDate->isPast()) {
                     $task->status = 'overdue';
-                }
-
-                if ($task->progress == 100 && $task->status !== 'completed') {
-                    $task->status = 'completed';
                 }
 
                 $task->save();

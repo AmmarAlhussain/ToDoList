@@ -53,8 +53,13 @@
                                     </td>
                                     <td>{{ $task->due_date }}</td>
                                     <td>
-                                        <a href="{{ route('download', $task->id) }}" class="show-more-btn"
-                                            style="text-decoration: none;">Download</a>
+                                        @if ($task->file)
+                                            <a href="{{ route('download', $task->id) }}" class="show-more-btn" style="text-decoration: none;">
+                                                Download
+                                            </a>
+                                        @else
+                                            No File
+                                        @endif
                                     </td>
                                     <td>
                                         <a href="{{ route('updateTaskPage', $task->id) }}">
@@ -87,16 +92,13 @@
         <script>
             setTimeout(() => {
                 function handleTaskEvent(event) {
-                    console.log('Task event received:', event);
-
-                    const task = event.task || event;
-                    const action = event.action || task.action;
+                    const task = event;
+                    const action = event.action;
                     const container = document.getElementById('tasks-container');
                     const noTasksMessage = document.getElementById('no-tasks-message');
 
 
                     if (action === 'delete') {
-                        console.log('Processing delete action for task ID:', task.id);
                         const rowToRemove = document.getElementById(`task-${task.id}`);
 
                         if (rowToRemove) {
@@ -128,8 +130,6 @@
                         }
                         return;
                     }
-
-                    console.log('Processing add/update action for task:', task);
 
                     if (noTasksMessage) {
                         noTasksMessage.style.display = 'none';
@@ -186,7 +186,9 @@
             </td>
             <td>${task.due_date || 'N/A'}</td>
             <td>
-                <a href="/download/${task.id}" class="show-more-btn" style="text-decoration: none;">Download</a>
+                ${task.file ? 
+                    `<a href="/download/${task.id}" class="show-more-btn" style="text-decoration: none;">Download</a>` : 
+                    '<span>No File</span>'}
             </td>
             <td>
                 <a href="/${task.id}/edit"><button type="button">Edit</button></a>
@@ -234,7 +236,6 @@
             function closeModal() {
                 document.getElementById('description-modal').style.display = 'none';
             }
-
 
             window.onclick = function(event) {
                 const modal = document.getElementById('description-modal');
