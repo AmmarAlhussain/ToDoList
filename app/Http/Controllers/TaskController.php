@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Mail\UpdateInfo;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use App\Events\TaskCreated;
 use App\Events\TaskUpdated;
+use App\Events\TaskDeleted;
+use Carbon\Carbon;
 
 class TaskController extends Controller
 {
@@ -38,11 +41,19 @@ class TaskController extends Controller
             $file = $request->file('file')->store('tasks', 's3');
             Storage::disk('s3')->setVisibility($file, 'public');
         }
+
+        $dueDate = Carbon::parse($validated['due_date']);
+        $status = $validated['status'];
+        
+        
+        if ($dueDate->isPast() && $status !== 'completed') {
+            $status = 'overdue';
+        }
         
         $task = Task::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? '',
-            'status' => $validated['status'],
+            'status' => $status,
             'due_date' => $validated['due_date'],
             'user_id' => Auth::id(),
             'progress' => $validated['progress'],
@@ -52,7 +63,7 @@ class TaskController extends Controller
         if (!empty($validated['names'])) {
             $task->users()->attach($validated['names']);
         }
-
+        event(new TaskCreated($task));
         return redirect()->route('home'); 
     }
 
@@ -103,42 +114,82 @@ class TaskController extends Controller
         $file = $request->file('file')->store('tasks', 's3');
         Storage::disk('s3')->setVisibility($file, 'public');
     }
+
+    $dueDate = Carbon::parse($validated['due_date']);
+    $status = $validated['status'];
+
+    if ($dueDate->isPast() && $status !== 'completed') {
+        $status = 'overdue';
+    }
         
+    $previousUserIds = $task->users()->pluck('user_id')->toArray();
+    $task->update([
+        'title' => $validated['title'],
+        'description' => $validated['description'] ?? '',
+        'status' => $status,
+        'due_date' => $validated['due_date'],
+        'progress' => $validated['progress'],
+        'file' => $file
+    ]);
     
-        $task->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? '',
-            'status' => $validated['status'],
-            'due_date' => $validated['due_date'],
-            'progress' => $validated['progress'],
-            'file' => $file
-        ]);
-    
-        if ($task->user_id == Auth::id()) { 
-            $task->users()->detach();
-            if (!empty($validated['names'])) {
-                $task->users()->attach($validated['names']);
-            }
+    if ($task->user_id == Auth::id()) { 
+        $task->users()->detach();
+        if (!empty($validated['names'])) {
+            $task->users()->attach($validated['names']);
         }
+    }
+    $newUserIds = $task->users()->pluck('user_id')->toArray();
+
+    $removedUserIds = array_diff($previousUserIds, $newUserIds);
+
+    if (!empty($removedUserIds)) {
+        foreach ($removedUserIds as $userId) {
+            broadcast(new TaskDeleted($task->id, [$userId], true));
+        }
+    }
+
+    foreach ($removedUserIds as $userId) {
+        $removedUser = User::find($userId);
+        if ($removedUser) {
+            Mail::to($removedUser->email)->send(new UpdateInfo(
+                "You have been removed from the task '{$task->title}'.", 
+                "Removed from Task: {$task->title}"
+            ));
+        }
+    }
     
         $group = $task->users;
         foreach ($group as $user) {
             Mail::to($user->email)->send(new UpdateInfo("The task '{$task->title}' has been updated. Status: {$task->status}, Progress: {$task->progress}%", "Task Updated: {$task->title}"));
         }
         Mail::to(User::find($task->user_id)->email)->send(new UpdateInfo("The task '{$task->title}' has been updated. Status: {$task->status}, Progress: {$task->progress}%", "Task Updated: {$task->title}"));
-        broadcast(new TaskUpdated());
+        event(new TaskUpdated($task));
+
         return redirect()->route('home'); 
     }
 
 
     public function destroy(Task $task)
     {
+
         if ($task->user_id != Auth::id()) {
             abort(403);
         }
-
+        
+        
+        $taskId = $task->id;
+        
+        
+        $affectedUserIds = collect([$task->user_id]);
+        $sharedUserIds = $task->users()->pluck('user_id')->toArray();
+        $affectedUserIds = $affectedUserIds->merge($sharedUserIds)->unique()->values()->toArray();
+        
         $task->delete();
+        
 
-        return redirect()->route('home'); 
+        event(new TaskDeleted($taskId, $affectedUserIds));
+        
+        return redirect()->route('home');
     }
+    
 }

@@ -11,11 +11,13 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use App\Models\Task;
 
-class TaskUpdated implements ShouldBroadcast
+class TaskCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+
     public function __construct(public $task){}
+
 
     public function broadcastOn()
     {
@@ -45,7 +47,7 @@ class TaskUpdated implements ShouldBroadcast
             'progress' => $this->task->progress ?? 0,
             'due_date' => $this->task->due_date ?? '',
             'user_id' => $this->task->user_id ?? 0,
-            'action' => 'update',
+            'action' => 'add',
         ];
     }
 }

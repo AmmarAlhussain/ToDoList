@@ -9,6 +9,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Auth;
 
+
 Route::get('/', [HomeController::class, 'indexPage'])->name('home');
 
 Route::post('/logout', function () {
