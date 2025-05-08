@@ -29,7 +29,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get("auth/google",[GoogleAuthController::class,"redirect"])->name("google-auth");
 
-    Route::get("auth/google/callback",[GoogleAuthController::class,"callbackGoogle"])->name("");
+    Route::get("auth/google/callback",[GoogleAuthController::class,"callbackGoogle"])->name("google.callback");
 
 });
 

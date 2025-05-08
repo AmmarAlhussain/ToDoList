@@ -16,7 +16,7 @@
 
         <div class="input-group">
             <label for="title">Title</label>
-            <input type="text" id="title" name="title" value="{{ old('title', $task->title) }}" required>
+            <input type="text" id="title" name="title" value="{{ old('title', $task->title) }}" @if($task->user_id != Auth::id()) disabled @endif required>
         </div>
 
         <div class="input-group">
@@ -37,7 +37,7 @@
 
         <div class="input-group">
             <label for="due_date">Due Date</label>
-            <input type="date" id="due_date" name="due_date" value="{{ old('due_date', $task->due_date) }}" required>
+            <input type="date" id="due_date" name="due_date" value="{{ old('due_date', $task->due_date) }}" @if($task->user_id != Auth::id()) disabled @endif  required>
         </div>
         @if ($users != "null")
         <div class="input-group">
@@ -51,12 +51,11 @@
         <div class="input-group">
             <input type="file" name="file">
         </div>
+
         <div class="input-group">
             <label for="progress">Progress</label>
-            <input type="number" id="progress" name="progress" value="{{ old('progress', $task->progress) }}" min="0" max="100" step="1" required oninput="updateProgressBar()">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBarFill" style="width: {{ $task->progress }}%;"></div>
-            </div>
+            <input type="range" id="progress" name="progress" min="0" max="100" value="{{ old('progress', $task->progress) }}" required style="padding: 3px 0">
+            <span id="progressValue">{{ old('progress', $task->progress) }}%</span>
         </div>
 
         <div class="form-footer">
@@ -68,14 +67,15 @@
     const progress = document.getElementById('progress');
     const progressValue = document.getElementById('progressValue');
     const statusSelect = document.getElementById('status');
+    const progressBarFill = document.getElementById('progressBarFill');
 
     function updateProgressDisplay(value) {
         progress.value = value;
-        progressValue.textContent = value + "%";
+        progressValue.textContent = value + "%"; 
     }
 
     progress.addEventListener('input', function (e) {
-        progressValue.textContent = e.target.value + "%";
+        updateProgressDisplay(e.target.value);
     });
 
     statusSelect.addEventListener('change', function () {

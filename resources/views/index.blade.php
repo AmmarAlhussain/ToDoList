@@ -191,7 +191,7 @@
                     '<span>No File</span>'}
             </td>
             <td>
-                <a href="/${task.id}/edit"><button type="button">Edit</button></a>
+                <a href="/tasks/${task.id}/edit"><button type="button">Edit</button></a>
                 ${task.user_id == userId ?
                 `<form action="/delete/${task.id}" method="POST" style="display:inline;">
                             @csrf
